@@ -274,18 +274,18 @@
       <p class="eyebrow">12-tone equal temperament</p>
       <h1 id="app-title">A440 Tuning-Pocket Explorer</h1>
       <p class="intro">
-        Move or type a cents position from 0 to 100 to shift A440 and every chromatic note by the same tuning offset.
-        Every position between 0 and 100 cents is a unique tuning world. At 100 cents, the grid aligns again one semitone higher.
+        Move or type a cents position from -100 to 100 to shift A440 and every chromatic note by the same tuning offset.
+        Every position between -100 and 100 cents is a unique tuning world. At -100 or 100 cents, the grid aligns again one semitone away.
       </p>
 
       <div class="controls">
         <div>
           <label for="centSlider">Cents position</label>
-          <input id="centSlider" type="range" min="0" max="100" step="0.01" value="0" aria-label="Cents position slider" />
+          <input id="centSlider" type="range" min="-100" max="100" step="0.01" value="0" aria-label="Cents position slider" />
         </div>
         <div>
           <label for="centInput">Exact cents</label>
-          <input id="centInput" type="number" min="0" max="100" step="0.01" value="0" aria-label="Exact cents input" />
+          <input id="centInput" type="number" min="-100" max="100" step="0.01" value="0" aria-label="Exact cents input" />
         </div>
       </div>
 
@@ -336,12 +336,14 @@
     const notesDiv = document.getElementById("notes");
 
     let audioContext;
+    let activeSound;
+    let activeCard;
     let currentCents = 0;
 
     function clampCents(value) {
       let cents = parseFloat(value);
       if (Number.isNaN(cents)) cents = 0;
-      return Math.min(100, Math.max(0, cents));
+      return Math.min(100, Math.max(-100, cents));
     }
 
     function hzFromCents(baseHz, cents) {
@@ -353,16 +355,18 @@
     }
 
     function getCyclicPosition(cents) {
-      return cents === 100 ? 0 : cents;
+      return Math.abs(cents) === 100 ? 0 : cents;
     }
 
     function isStandardAlignment(cents) {
-      return cents === 0 || cents === 100;
+      return cents === -100 || cents === 0 || cents === 100;
     }
 
     function getCardColor(cents) {
-      const hue = 145 - (cents / 100) * 285;
-      const saturation = isStandardAlignment(cents) ? 70 : 78;
+      const distanceFromGrid = Math.min(Math.abs(cents), Math.abs(100 - Math.abs(cents)));
+      const progress = distanceFromGrid / 50;
+      const hue = 145 - progress * 105;
+      const saturation = isStandardAlignment(cents) ? 72 : 78;
       const lightness = isStandardAlignment(cents) ? 34 : 42;
       return `linear-gradient(145deg, hsl(${hue}, ${saturation}%, ${lightness}%), hsl(${hue + 26}, 76%, 24%))`;
     }
@@ -378,8 +382,25 @@
       return audioContext;
     }
 
+    function stopActiveSound() {
+      if (!activeSound) return;
+
+      const stopTime = audioContext.currentTime + 0.015;
+      activeSound.gain.gain.cancelScheduledValues(audioContext.currentTime);
+      activeSound.gain.gain.setTargetAtTime(0.0001, audioContext.currentTime, 0.004);
+      activeSound.oscillator.stop(stopTime);
+      activeSound = null;
+
+      if (activeCard) {
+        activeCard.classList.remove("playing");
+        activeCard = null;
+      }
+    }
+
     function playSine(frequency, card) {
       const context = ensureAudioContext();
+      stopActiveSound();
+
       const now = context.currentTime;
       const duration = 0.7;
       const attack = 0.018;
@@ -400,6 +421,16 @@
       gain.connect(context.destination);
       oscillator.start(now);
       oscillator.stop(now + duration);
+      activeSound = { oscillator, gain };
+      activeCard = card;
+      oscillator.addEventListener("ended", () => {
+        if (activeSound && activeSound.oscillator === oscillator) {
+          activeSound = null;
+        }
+        if (activeCard === card) {
+          activeCard = null;
+        }
+      });
 
       card.classList.remove("playing");
       void card.offsetWidth;
@@ -421,7 +452,7 @@
         card.innerHTML = `
           <div class="note-name">${name}</div>
           <div class="hz">${freq.toFixed(2)} Hz</div>
-          <div class="offset">cents offset: +${cents.toFixed(2)}c</div>
+          <div class="offset">cents offset: ${cents >= 0 ? "+" : ""}${cents.toFixed(2)}c</div>
         `;
 
         card.addEventListener("click", () => playSine(freq, card));
