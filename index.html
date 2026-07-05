@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>A440 Tuning Pocket Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 30px;
+    }
+
+    input[type="range"] {
+      width: 90%;
+      max-width: 700px;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 8px;
+      font-size: 18px;
+      text-align: center;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+    }
+
+    .big {
+      font-size: 28px;
+      margin: 15px 0;
+    }
+
+    .info {
+      margin: 10px;
+      font-size: 18px;
+    }
+
+    .notes {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .note {
+      width: 115px;
+      padding: 15px;
+      border-radius: 12px;
+      background: #7a1f1f;
+    }
+
+    .green { background: #168a3a; }
+    .yellow { background: #9b850f; }
+    .red { background: #7a1f1f; }
+
+    .note-name {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .hz {
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .match {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>A440 Tuning Pocket Tool</h1>
+<p>Move or type cents. The app shows raw cents and folded tuning identity.</p>
+
+<input id="centSlider" type="range" min="0" max="100" step="0.01" value="0">
+
+<div>
+  <input id="centInput" type="number" min="0" max="100" step="0.01" value="0">
+</div>
+
+<div class="big">A = <span id="aHz">440.00</span> Hz</div>
+
+<div class="info">Raw cents: <span id="rawCents">0.00</span></div>
+<div class="info">Folded tuning pocket: <span id="foldedCents">0.00</span> cents</div>
+<div class="info">Pocket direction: <span id="direction">standard</span></div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+  const noteNames = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"];
+
+  const slider = document.getElementById("centSlider");
+  const input = document.getElementById("centInput");
+
+  const aHz = document.getElementById("aHz");
+  const rawCents = document.getElementById("rawCents");
+  const foldedCents = document.getElementById("foldedCents");
+  const direction = document.getElementById("direction");
+  const notesDiv = document.getElementById("notes");
+
+  function hzFromCents(baseHz, cents) {
+    return baseHz * Math.pow(2, cents / 1200);
+  }
+
+  function getFolded(cents) {
+    return Math.min(cents, 100 - cents);
+  }
+
+  function getDirection(cents) {
+    if (cents === 0 || cents === 100) return "standard alignment";
+    if (cents < 50) return "sharp from previous grid";
+    if (cents > 50) return "flat toward next grid";
+    return "exact center between grids";
+  }
+
+  function getColor(folded) {
+    if (folded < 5) return "green";
+    if (folded < 25) return "yellow";
+    return "red";
+  }
+
+  function update(value) {
+    let cents = parseFloat(value);
+
+    if (isNaN(cents)) cents = 0;
+    if (cents < 0) cents = 0;
+    if (cents > 100) cents = 100;
+
+    slider.value = cents;
+    input.value = cents;
+
+    const folded = getFolded(cents);
+    const baseA = hzFromCents(440, cents);
+
+    aHz.textContent = baseA.toFixed(2);
+    rawCents.textContent = cents.toFixed(2);
+    foldedCents.textContent = folded.toFixed(2);
+    direction.textContent = getDirection(cents);
+
+    notesDiv.innerHTML = "";
+
+    noteNames.forEach((name, i) => {
+      const freq = hzFromCents(baseA, i * 100);
+      const box = document.createElement("div");
+
+      box.className = "note " + getColor(folded);
+
+      box.innerHTML = `
+        <div class="note-name">${name}</div>
+        <div class="hz">${freq.toFixed(2)} Hz</div>
+        <div class="match">
+          raw: +${cents.toFixed(2)}c<br>
+          pocket: ${folded.toFixed(2)}c
+        </div>
+      `;
+
+      notesDiv.appendChild(box);
+    });
+  }
+
+  slider.addEventListener("input", () => update(slider.value));
+  input.addEventListener("input", () => update(input.value));
+
+  update(0);
+</script>
+
+</body>
+</html>
