@@ -133,6 +133,49 @@
       text-align: right;
     }
 
+    .quick-tunes {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .quick-tune {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .quick-tune input {
+      font-size: 1.05rem;
+    }
+
+    .quick-button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px 14px;
+      color: #062012;
+      font-size: 0.88rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #baffcf);
+      box-shadow: 0 12px 28px rgba(117, 240, 160, 0.18);
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+    }
+
+    .quick-button:hover,
+    .quick-button:focus-visible {
+      transform: translateY(-2px);
+      filter: brightness(1.04);
+      box-shadow: 0 16px 36px rgba(117, 240, 160, 0.26);
+      outline: none;
+    }
+
     .stats {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -262,7 +305,8 @@
       }
 
       .controls,
-      .stats {
+      .stats,
+      .quick-tunes {
         grid-template-columns: 1fr;
       }
     }
@@ -296,6 +340,29 @@
         </div>
         <div class="volume-value" id="volumeValue">35%</div>
       </div>
+
+      <div class="quick-tunes" aria-label="Quick tune presets">
+        <div class="quick-tune">
+          <label for="quickTune1">Quick tune 1</label>
+          <input id="quickTune1" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="1" aria-label="Quick tune 1 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune1">Set cents</button>
+        </div>
+        <div class="quick-tune">
+          <label for="quickTune2">Quick tune 2</label>
+          <input id="quickTune2" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="2" aria-label="Quick tune 2 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune2">Set cents</button>
+        </div>
+        <div class="quick-tune">
+          <label for="quickTune3">Quick tune 3</label>
+          <input id="quickTune3" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="3" aria-label="Quick tune 3 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune3">Set cents</button>
+        </div>
+        <div class="quick-tune">
+          <label for="quickTune4">Quick tune 4</label>
+          <input id="quickTune4" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="4" aria-label="Quick tune 4 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune4">Set cents</button>
+        </div>
+      </div>
     </section>
 
     <section class="stats" aria-label="Tuning details">
@@ -328,6 +395,8 @@
     const input = document.getElementById("centInput");
     const volumeSlider = document.getElementById("volumeSlider");
     const volumeValue = document.getElementById("volumeValue");
+    const quickInputs = document.querySelectorAll(".quick-input");
+    const quickButtons = document.querySelectorAll(".quick-button");
 
     const aHz = document.getElementById("aHz");
     const rawCents = document.getElementById("rawCents");
@@ -482,6 +551,29 @@
     input.addEventListener("input", () => update(input.value));
     volumeSlider.addEventListener("input", () => {
       volumeValue.textContent = `${Math.round(parseFloat(volumeSlider.value) * 100)}%`;
+    });
+
+    quickInputs.forEach((quickInput) => {
+      const savedValue = localStorage.getItem(`quickTune${quickInput.dataset.slot}`);
+      if (savedValue !== null) {
+        quickInput.value = clampCents(savedValue);
+      }
+
+      quickInput.addEventListener("change", () => {
+        const cents = clampCents(quickInput.value);
+        quickInput.value = cents;
+        localStorage.setItem(`quickTune${quickInput.dataset.slot}`, cents);
+      });
+    });
+
+    quickButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const quickInput = document.getElementById(button.dataset.quickTarget);
+        const cents = clampCents(quickInput.value);
+        quickInput.value = cents;
+        localStorage.setItem(`quickTune${quickInput.dataset.slot}`, cents);
+        update(cents);
+      });
     });
 
     update(currentCents);
