@@ -1,174 +1,582 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>A440 Tuning Pocket Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A440 Tuning-Pocket Explorer</title>
   <style>
+    :root {
+      --bg: #080a10;
+      --panel: rgba(18, 22, 34, 0.88);
+      --panel-strong: rgba(28, 34, 50, 0.95);
+      --text: #f7f2e8;
+      --muted: #b7bdca;
+      --accent: #75f0a0;
+      --accent-2: #74c7ff;
+      --ring: rgba(117, 240, 160, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
-      padding: 30px;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(98, 255, 176, 0.16), transparent 34rem),
+        radial-gradient(circle at top right, rgba(116, 199, 255, 0.14), transparent 30rem),
+        linear-gradient(145deg, #05060a 0%, var(--bg) 50%, #10131d 100%);
+      padding: 28px;
+    }
+
+    main {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(20, 25, 39, 0.92), rgba(11, 14, 22, 0.88));
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+      backdrop-filter: blur(18px);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 4.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr minmax(160px, 220px);
+      gap: 22px;
+      align-items: end;
+      margin-top: 30px;
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     input[type="range"] {
-      width: 90%;
-      max-width: 700px;
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
     }
 
     input[type="number"] {
-      width: 100px;
-      padding: 8px;
-      font-size: 18px;
+      width: 100%;
+      padding: 14px 16px;
+      color: var(--text);
+      font-size: 1.25rem;
+      font-weight: 800;
       text-align: center;
-      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      outline: none;
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    .volume-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 18px 24px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .volume-value {
+      min-width: 52px;
+      color: var(--accent-2);
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .quick-tunes {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .quick-tune {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .quick-tune input {
+      font-size: 1.05rem;
+    }
+
+    .quick-button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px 14px;
+      color: #062012;
+      font-size: 0.88rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       border: none;
-      margin-top: 10px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #baffcf);
+      box-shadow: 0 12px 28px rgba(117, 240, 160, 0.18);
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
     }
 
-    .big {
-      font-size: 28px;
-      margin: 15px 0;
+    .quick-button:hover,
+    .quick-button:focus-visible {
+      transform: translateY(-2px);
+      filter: brightness(1.04);
+      box-shadow: 0 16px 36px rgba(117, 240, 160, 0.26);
+      outline: none;
     }
 
-    .info {
-      margin: 10px;
-      font-size: 18px;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .stat {
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-title {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .alignment.standard {
+      color: var(--accent);
+    }
+
+    .alignment.shifted {
+      color: #ffd166;
     }
 
     .notes {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
     }
 
     .note {
-      width: 115px;
-      padding: 15px;
-      border-radius: 12px;
-      background: #7a1f1f;
+      position: relative;
+      min-height: 168px;
+      padding: 18px;
+      overflow: hidden;
+      color: white;
+      text-align: left;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
-    .green { background: #168a3a; }
-    .yellow { background: #9b850f; }
-    .red { background: #7a1f1f; }
+    .note::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.24), transparent 50%);
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    .note:hover,
+    .note:focus-visible {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.55);
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.32);
+      outline: none;
+    }
+
+    .note.playing {
+      animation: pulse 700ms ease;
+      box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2), 0 22px 60px rgba(117, 240, 160, 0.28);
+    }
+
+    .note-name,
+    .hz,
+    .offset {
+      position: relative;
+      z-index: 1;
+    }
 
     .note-name {
-      font-size: 22px;
-      font-weight: bold;
+      font-size: 2rem;
+      font-weight: 950;
+      letter-spacing: -0.06em;
     }
 
     .hz {
-      font-size: 14px;
-      margin-top: 8px;
+      margin-top: 18px;
+      font-size: 1.2rem;
+      font-weight: 850;
     }
 
-    .match {
-      font-size: 12px;
-      opacity: 0.85;
-      margin-top: 6px;
+    .offset {
+      margin-top: 8px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .hint {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); filter: brightness(1); }
+      35% { transform: scale(1.045); filter: brightness(1.22); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    @media (max-width: 820px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero {
+        padding: 24px;
+      }
+
+      .controls,
+      .stats,
+      .quick-tunes {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
+  <main>
+    <section class="hero" aria-labelledby="app-title">
+      <p class="eyebrow">12-tone equal temperament</p>
+      <h1 id="app-title">A440 Tuning-Pocket Explorer</h1>
+      <p class="intro">
+        Move or type a cents position from -100 to 100 to shift A440 and every chromatic note by the same tuning offset.
+        Every position between -100 and 100 cents is a unique tuning world. At -100 or 100 cents, the grid aligns again one semitone away.
+      </p>
 
-<h1>A440 Tuning Pocket Tool</h1>
-<p>Move or type cents. The app shows raw cents and folded tuning identity.</p>
-
-<input id="centSlider" type="range" min="0" max="100" step="0.01" value="0">
-
-<div>
-  <input id="centInput" type="number" min="0" max="100" step="0.01" value="0">
-</div>
-
-<div class="big">A = <span id="aHz">440.00</span> Hz</div>
-
-<div class="info">Raw cents: <span id="rawCents">0.00</span></div>
-<div class="info">Folded tuning pocket: <span id="foldedCents">0.00</span> cents</div>
-<div class="info">Pocket direction: <span id="direction">standard</span></div>
-
-<div class="notes" id="notes"></div>
-
-<script>
-  const noteNames = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"];
-
-  const slider = document.getElementById("centSlider");
-  const input = document.getElementById("centInput");
-
-  const aHz = document.getElementById("aHz");
-  const rawCents = document.getElementById("rawCents");
-  const foldedCents = document.getElementById("foldedCents");
-  const direction = document.getElementById("direction");
-  const notesDiv = document.getElementById("notes");
-
-  function hzFromCents(baseHz, cents) {
-    return baseHz * Math.pow(2, cents / 1200);
-  }
-
-  function getFolded(cents) {
-    return Math.min(cents, 100 - cents);
-  }
-
-  function getDirection(cents) {
-    if (cents === 0 || cents === 100) return "standard alignment";
-    if (cents < 50) return "sharp from previous grid";
-    if (cents > 50) return "flat toward next grid";
-    return "exact center between grids";
-  }
-
-  function getColor(folded) {
-    if (folded < 5) return "green";
-    if (folded < 25) return "yellow";
-    return "red";
-  }
-
-  function update(value) {
-    let cents = parseFloat(value);
-
-    if (isNaN(cents)) cents = 0;
-    if (cents < 0) cents = 0;
-    if (cents > 100) cents = 100;
-
-    slider.value = cents;
-    input.value = cents;
-
-    const folded = getFolded(cents);
-    const baseA = hzFromCents(440, cents);
-
-    aHz.textContent = baseA.toFixed(2);
-    rawCents.textContent = cents.toFixed(2);
-    foldedCents.textContent = folded.toFixed(2);
-    direction.textContent = getDirection(cents);
-
-    notesDiv.innerHTML = "";
-
-    noteNames.forEach((name, i) => {
-      const freq = hzFromCents(baseA, i * 100);
-      const box = document.createElement("div");
-
-      box.className = "note " + getColor(folded);
-
-      box.innerHTML = `
-        <div class="note-name">${name}</div>
-        <div class="hz">${freq.toFixed(2)} Hz</div>
-        <div class="match">
-          raw: +${cents.toFixed(2)}c<br>
-          pocket: ${folded.toFixed(2)}c
+      <div class="controls">
+        <div>
+          <label for="centSlider">Cents position</label>
+          <input id="centSlider" type="range" min="-100" max="100" step="0.01" value="0" aria-label="Cents position slider" />
         </div>
-      `;
+        <div>
+          <label for="centInput">Exact cents</label>
+          <input id="centInput" type="number" min="-100" max="100" step="0.01" value="0" aria-label="Exact cents input" />
+        </div>
+      </div>
 
-      notesDiv.appendChild(box);
+      <div class="volume-row">
+        <div>
+          <label for="volumeSlider">Playback volume</label>
+          <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.35" aria-label="Playback volume" />
+        </div>
+        <div class="volume-value" id="volumeValue">35%</div>
+      </div>
+
+      <div class="quick-tunes" aria-label="Quick tune presets">
+        <div class="quick-tune">
+          <label for="quickTune1">Quick tune 1</label>
+          <input id="quickTune1" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="1" aria-label="Quick tune 1 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune1">Set cents</button>
+        </div>
+        <div class="quick-tune">
+          <label for="quickTune2">Quick tune 2</label>
+          <input id="quickTune2" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="2" aria-label="Quick tune 2 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune2">Set cents</button>
+        </div>
+        <div class="quick-tune">
+          <label for="quickTune3">Quick tune 3</label>
+          <input id="quickTune3" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="3" aria-label="Quick tune 3 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune3">Set cents</button>
+        </div>
+        <div class="quick-tune">
+          <label for="quickTune4">Quick tune 4</label>
+          <input id="quickTune4" class="quick-input" type="number" min="-100" max="100" step="0.01" value="0" data-slot="4" aria-label="Quick tune 4 cents" />
+          <button class="quick-button" type="button" data-quick-target="quickTune4">Set cents</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Tuning details">
+      <div class="stat">
+        <div class="stat-title">Raw cents</div>
+        <div class="stat-value"><span id="rawCents">0.00</span>c</div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">Base A Hz</div>
+        <div class="stat-value"><span id="aHz">440.00</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">Cyclic position</div>
+        <div class="stat-value"><span id="cyclicPosition">0.00</span>c</div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">Alignment</div>
+        <div class="stat-value alignment standard" id="alignment">standard alignment</div>
+      </div>
+    </section>
+
+    <section class="notes" id="notes" aria-label="Playable note cards"></section>
+    <p class="hint">Click any note card to hear a short sine wave at the displayed frequency.</p>
+  </main>
+
+  <script>
+    const noteNames = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"];
+
+    const slider = document.getElementById("centSlider");
+    const input = document.getElementById("centInput");
+    const volumeSlider = document.getElementById("volumeSlider");
+    const volumeValue = document.getElementById("volumeValue");
+    const quickInputs = document.querySelectorAll(".quick-input");
+    const quickButtons = document.querySelectorAll(".quick-button");
+
+    const aHz = document.getElementById("aHz");
+    const rawCents = document.getElementById("rawCents");
+    const cyclicPosition = document.getElementById("cyclicPosition");
+    const alignment = document.getElementById("alignment");
+    const notesDiv = document.getElementById("notes");
+
+    let audioContext;
+    let activeSound;
+    let activeCard;
+    let currentCents = 0;
+
+    function clampCents(value) {
+      let cents = parseFloat(value);
+      if (Number.isNaN(cents)) cents = 0;
+      return Math.min(100, Math.max(-100, cents));
+    }
+
+    function hzFromCents(baseHz, cents) {
+      return baseHz * Math.pow(2, cents / 1200);
+    }
+
+    function getBaseA(cents) {
+      return 440 * Math.pow(2, cents / 1200);
+    }
+
+    function getCyclicPosition(cents) {
+      return Math.abs(cents) === 100 ? 0 : cents;
+    }
+
+    function isStandardAlignment(cents) {
+      return cents === -100 || cents === 0 || cents === 100;
+    }
+
+    function getCardColor(cents) {
+      const distanceFromGrid = Math.min(Math.abs(cents), Math.abs(100 - Math.abs(cents)));
+      const progress = distanceFromGrid / 50;
+      const hue = 145 - progress * 105;
+      const saturation = isStandardAlignment(cents) ? 72 : 78;
+      const lightness = isStandardAlignment(cents) ? 34 : 42;
+      return `linear-gradient(145deg, hsl(${hue}, ${saturation}%, ${lightness}%), hsl(${hue + 26}, 76%, 24%))`;
+    }
+
+    function ensureAudioContext() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!audioContext) {
+        audioContext = new AudioContextClass();
+      }
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+      return audioContext;
+    }
+
+    function stopActiveSound() {
+      if (!activeSound) return;
+
+      const stopTime = audioContext.currentTime + 0.015;
+      activeSound.gain.gain.cancelScheduledValues(audioContext.currentTime);
+      activeSound.gain.gain.setTargetAtTime(0.0001, audioContext.currentTime, 0.004);
+      activeSound.oscillator.stop(stopTime);
+      activeSound = null;
+
+      if (activeCard) {
+        activeCard.classList.remove("playing");
+        activeCard = null;
+      }
+    }
+
+    function playSine(frequency, card) {
+      const context = ensureAudioContext();
+      stopActiveSound();
+
+      const now = context.currentTime;
+      const duration = 0.7;
+      const attack = 0.018;
+      const release = 0.12;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const volume = parseFloat(volumeSlider.value);
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, now);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(Math.max(volume, 0.0001), now + attack);
+      gain.gain.setValueAtTime(Math.max(volume, 0.0001), now + duration - release);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + duration);
+      activeSound = { oscillator, gain };
+      activeCard = card;
+      oscillator.addEventListener("ended", () => {
+        if (activeSound && activeSound.oscillator === oscillator) {
+          activeSound = null;
+        }
+        if (activeCard === card) {
+          activeCard = null;
+        }
+      });
+
+      card.classList.remove("playing");
+      void card.offsetWidth;
+      card.classList.add("playing");
+      window.setTimeout(() => card.classList.remove("playing"), duration * 1000);
+    }
+
+    function renderNotes(baseA, cents) {
+      notesDiv.innerHTML = "";
+
+      noteNames.forEach((name, semitoneIndex) => {
+        const freq = baseA * Math.pow(2, semitoneIndex / 12);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "note";
+        card.style.background = getCardColor(cents);
+        card.setAttribute("aria-label", `Play ${name} at ${freq.toFixed(2)} hertz`);
+
+        card.innerHTML = `
+          <div class="note-name">${name}</div>
+          <div class="hz">${freq.toFixed(2)} Hz</div>
+          <div class="offset">cents offset: ${cents >= 0 ? "+" : ""}${cents.toFixed(2)}c</div>
+        `;
+
+        card.addEventListener("click", () => playSine(freq, card));
+        notesDiv.appendChild(card);
+      });
+    }
+
+    function update(value) {
+      const cents = clampCents(value);
+      const baseA = getBaseA(cents);
+      const aligned = isStandardAlignment(cents);
+
+      currentCents = cents;
+      slider.value = cents;
+      input.value = cents;
+
+      aHz.textContent = baseA.toFixed(2);
+      rawCents.textContent = cents.toFixed(2);
+      cyclicPosition.textContent = getCyclicPosition(cents).toFixed(2);
+      alignment.textContent = aligned ? "standard alignment" : "unique tuning position";
+      alignment.className = `stat-value alignment ${aligned ? "standard" : "shifted"}`;
+
+      renderNotes(baseA, cents);
+    }
+
+    slider.addEventListener("input", () => update(slider.value));
+    input.addEventListener("input", () => update(input.value));
+    volumeSlider.addEventListener("input", () => {
+      volumeValue.textContent = `${Math.round(parseFloat(volumeSlider.value) * 100)}%`;
     });
-  }
 
-  slider.addEventListener("input", () => update(slider.value));
-  input.addEventListener("input", () => update(input.value));
+    quickInputs.forEach((quickInput) => {
+      const savedValue = localStorage.getItem(`quickTune${quickInput.dataset.slot}`);
+      if (savedValue !== null) {
+        quickInput.value = clampCents(savedValue);
+      }
 
-  update(0);
-</script>
+      quickInput.addEventListener("change", () => {
+        const cents = clampCents(quickInput.value);
+        quickInput.value = cents;
+        localStorage.setItem(`quickTune${quickInput.dataset.slot}`, cents);
+      });
+    });
 
+    quickButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const quickInput = document.getElementById(button.dataset.quickTarget);
+        const cents = clampCents(quickInput.value);
+        quickInput.value = cents;
+        localStorage.setItem(`quickTune${quickInput.dataset.slot}`, cents);
+        update(cents);
+      });
+    });
+
+    update(currentCents);
+  </script>
 </body>
 </html>
