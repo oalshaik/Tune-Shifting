@@ -214,6 +214,143 @@
       color: #ffd166;
     }
 
+    .piano-visual {
+      margin: 0 0 24px;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 50px rgba(0, 0, 0, 0.22);
+    }
+
+    .piano-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    .piano-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 950;
+      letter-spacing: -0.03em;
+    }
+
+    .piano-copy {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .piano-status {
+      min-width: 150px;
+      color: var(--accent-2);
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .keyboard-stage {
+      --shift-keys: 0;
+      --overlay-opacity: 0.9;
+      position: relative;
+      min-height: 156px;
+      overflow: hidden;
+      padding: 22px 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      background:
+        linear-gradient(90deg, rgba(117, 240, 160, 0.08), rgba(116, 199, 255, 0.06)),
+        rgba(0, 0, 0, 0.2);
+    }
+
+    .octave-grid {
+      display: grid;
+      grid-template-columns: repeat(13, minmax(0, 1fr));
+      gap: 4px;
+      width: 100%;
+      padding: 0 12px;
+    }
+
+    .octave-grid.shifted {
+      position: absolute;
+      top: 22px;
+      left: 0;
+      opacity: var(--overlay-opacity);
+      transform: translateX(calc(var(--shift-keys) * (100% / 12)));
+      transition: transform 120ms ease, opacity 120ms ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .piano-key {
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      min-height: 92px;
+      padding: 9px 4px;
+      font-size: 0.74rem;
+      font-weight: 950;
+      border-radius: 0 0 12px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .piano-key.natural {
+      color: #172033;
+      background: linear-gradient(180deg, #fffdf4, #d8deea);
+    }
+
+    .piano-key.sharp {
+      min-height: 62px;
+      color: #f8fbff;
+      background: linear-gradient(180deg, #202638, #05070d);
+    }
+
+    .shifted .piano-key {
+      color: #04150d;
+      border-color: rgba(117, 240, 160, 0.55);
+      background: linear-gradient(180deg, rgba(117, 240, 160, 0.95), rgba(116, 199, 255, 0.72));
+      box-shadow: 0 0 22px rgba(117, 240, 160, 0.22), inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .shifted .piano-key.sharp {
+      color: #eafff1;
+      background: linear-gradient(180deg, rgba(34, 225, 122, 0.9), rgba(9, 55, 40, 0.88));
+    }
+
+    .piano-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 0.75rem;
+      height: 0.75rem;
+      margin-right: 6px;
+      vertical-align: -0.08rem;
+      border-radius: 999px;
+    }
+
+    .legend-dot.base {
+      background: #f7f2e8;
+    }
+
+    .legend-dot.shifted {
+      background: var(--accent);
+    }
+
     .notes {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -309,6 +446,19 @@
       .quick-tunes {
         grid-template-columns: 1fr;
       }
+
+      .piano-header {
+        display: block;
+      }
+
+      .piano-status {
+        margin-top: 10px;
+        text-align: left;
+      }
+
+      .piano-key {
+        font-size: 0.64rem;
+      }
     }
   </style>
 </head>
@@ -384,6 +534,24 @@
       </div>
     </section>
 
+    <section class="piano-visual" aria-label="Visual piano octave alignment">
+      <div class="piano-header">
+        <div>
+          <h2 class="piano-title">Visual piano octave alignment</h2>
+          <p class="piano-copy">The white/black octave is the fixed grid. The green octave floats on top as the cents move, becoming brighter when it finds the grid again.</p>
+        </div>
+        <div class="piano-status" id="pianoStatus">Aligned</div>
+      </div>
+      <div class="keyboard-stage" id="keyboardStage">
+        <div class="octave-grid base" id="baseOctave" aria-hidden="true"></div>
+        <div class="octave-grid shifted" id="shiftedOctave" aria-hidden="true"></div>
+      </div>
+      <div class="piano-legend" aria-hidden="true">
+        <span><span class="legend-dot base"></span>fixed octave</span>
+        <span><span class="legend-dot shifted"></span>moving tuning octave</span>
+      </div>
+    </section>
+
     <section class="notes" id="notes" aria-label="Playable note cards"></section>
     <p class="hint">Click any note card to hear a short sine wave at the displayed frequency.</p>
   </main>
@@ -402,6 +570,10 @@
     const rawCents = document.getElementById("rawCents");
     const cyclicPosition = document.getElementById("cyclicPosition");
     const alignment = document.getElementById("alignment");
+    const keyboardStage = document.getElementById("keyboardStage");
+    const baseOctave = document.getElementById("baseOctave");
+    const shiftedOctave = document.getElementById("shiftedOctave");
+    const pianoStatus = document.getElementById("pianoStatus");
     const notesDiv = document.getElementById("notes");
 
     let audioContext;
@@ -431,13 +603,43 @@
       return cents === -100 || cents === 0 || cents === 100;
     }
 
+    function getDistanceFromGrid(cents) {
+      return Math.min(Math.abs(cents), Math.abs(100 - Math.abs(cents)));
+    }
+
+    function getAlignmentStrength(cents) {
+      return 1 - getDistanceFromGrid(cents) / 50;
+    }
+
     function getCardColor(cents) {
-      const distanceFromGrid = Math.min(Math.abs(cents), Math.abs(100 - Math.abs(cents)));
-      const progress = distanceFromGrid / 50;
+      const progress = getDistanceFromGrid(cents) / 50;
       const hue = 145 - progress * 105;
       const saturation = isStandardAlignment(cents) ? 72 : 78;
       const lightness = isStandardAlignment(cents) ? 34 : 42;
       return `linear-gradient(145deg, hsl(${hue}, ${saturation}%, ${lightness}%), hsl(${hue + 26}, 76%, 24%))`;
+    }
+
+    function renderPianoOctave(container, labelPrefix = "") {
+      container.innerHTML = "";
+
+      noteNames.forEach((name) => {
+        const key = document.createElement("div");
+        key.className = `piano-key ${name.includes("#") ? "sharp" : "natural"}`;
+        key.textContent = `${labelPrefix}${name}`;
+        container.appendChild(key);
+      });
+    }
+
+    function updatePianoVisual(cents) {
+      const shiftKeys = cents / 100;
+      const alignmentStrength = getAlignmentStrength(cents);
+      const overlayOpacity = 0.2 + alignmentStrength * 0.75;
+
+      keyboardStage.style.setProperty("--shift-keys", shiftKeys.toFixed(4));
+      keyboardStage.style.setProperty("--overlay-opacity", overlayOpacity.toFixed(2));
+      pianoStatus.textContent = isStandardAlignment(cents)
+        ? "Aligned"
+        : `${Math.abs(cents).toFixed(2)}c off grid`;
     }
 
     function ensureAudioContext() {
@@ -544,6 +746,7 @@
       alignment.textContent = aligned ? "standard alignment" : "unique tuning position";
       alignment.className = `stat-value alignment ${aligned ? "standard" : "shifted"}`;
 
+      updatePianoVisual(cents);
       renderNotes(baseA, cents);
     }
 
@@ -576,6 +779,8 @@
       });
     });
 
+    renderPianoOctave(baseOctave);
+    renderPianoOctave(shiftedOctave, "↕ ");
     update(currentCents);
   </script>
 </body>
